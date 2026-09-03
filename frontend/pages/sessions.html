@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exchange Sessions - SkillSwap Campus</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="../index.html" class="brand">
+        <div class="brand-icon">S</div>
+        <span>SkillSwap Campus</span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="requests.html">Requests</a></li>
+        <li><a href="sessions.html" class="active">Sessions</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="#" id="global-logout" class="nav-btn">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Sessions Content Container -->
+  <main class="container dashboard-container">
+    
+    <div style="margin-bottom: 32px;">
+      <h1>Exchange Sessions</h1>
+      <p style="color: var(--text-muted);">Track your active scheduled tutoring blocks or complete ratings on past learning swaps.</p>
+    </div>
+
+    <!-- Active Grid Sections -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;">
+      
+      <!-- Column: Upcoming -->
+      <div>
+        <div class="dashboard-section-header" style="border-bottom-color: var(--success-color);">
+          <h2>Upcoming Scheduled Swaps</h2>
+          <span class="badge badge-success" id="upcoming-count">1 Session</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px;" id="upcoming-list">
+          
+          <!-- Upcoming Session 1 -->
+          <div class="card" style="padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+              <h3 style="font-size: 1.05rem;">Spanish Exchange with Bob Jones</h3>
+              <span class="badge badge-success">Scheduled</span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+              <strong>Skill:</strong> Conversational Spanish (Bob teaching you)<br>
+              <strong>Date:</strong> August 20, 2026 at 2:00 PM<br>
+              <strong>Duration:</strong> 2.00 Hours (2.00 credits reserved)<br>
+              <strong>Venue:</strong> Library Study Room 4B
+            </p>
+            <div style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border-color); padding-top: 12px; font-size: 0.75rem;">
+              <button onclick="completeSession(this)" class="btn btn-success" style="padding: 6px 12px; font-size: 0.75rem;">Confirm Completed</button>
+              <button onclick="cancelSession(this)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem; color: var(--danger-color); border-color: transparent;">Cancel Booking</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Column: Past / Completed -->
+      <div>
+        <div class="dashboard-section-header" style="border-bottom-color: var(--text-muted);">
+          <h2>Completed Swaps History</h2>
+          <span class="badge badge-muted" id="past-count">1 Session</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px;" id="past-list">
+          
+          <!-- Past Session 1 -->
+          <div class="card" style="padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+              <h3 style="font-size: 1.05rem;">Python Tutoring with Chloe Chen</h3>
+              <span class="badge badge-muted">Completed</span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+              <strong>Skill:</strong> Python loops (You taught Chloe)<br>
+              <strong>Date:</strong> August 14, 2026 (1.50 Hours)<br>
+              <strong>Credits:</strong> +1.50 Swap Credits earned
+            </p>
+            <div style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border-color); padding-top: 12px; font-size: 0.75rem;" id="review-action-container">
+              <button onclick="openReviewModal('Chloe Chen', 'Python loops')" class="btn btn-amber" style="padding: 6px 12px; font-size: 0.75rem;" id="review-btn">Rate & Review Partner</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Review Submission Modal -->
+  <div id="review-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
+    <div class="card" style="width: 100%; max-width: 450px;">
+      <h2 style="margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Rate Learning Session</h2>
+      
+      <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px;">
+        Submit a double-blind review for <strong id="review-partner-name">Chloe Chen</strong> regarding the session on <span id="review-session-name">Python loops</span>.
+      </p>
+
+      <form id="review-form">
+        <div class="form-group">
+          <label class="form-label">Rating Value (1 to 5 Stars)</label>
+          <select id="review-rating" class="form-control" required>
+            <option value="5">★★★★★ (5 - Excellent)</option>
+            <option value="4">★★★★☆ (4 - Good)</option>
+            <option value="3">★★★☆☆ (3 - Average)</option>
+            <option value="2">★★☆☆☆ (2 - Poor)</option>
+            <option value="1">★☆☆☆☆ (1 - Very Bad)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="review-comment" class="form-label">Review Comment (Feedback for Profile)</label>
+          <textarea id="review-comment" class="form-control" rows="3" placeholder="Provide constructive feedback about preparation, punctuality, and skill mastery..." required></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button type="button" onclick="closeReviewModal()" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit Review</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+        <p>&copy; 2026 SkillSwap Campus. All rights reserved. Restrict domain verification in use.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    /**
+     * Complete Session (Move from upcoming to completed)
+     */
+    function completeSession(button) {
+      if (confirm("Confirm that this learning session has finished? This will release reserved credits to the tutor ledger.")) {
+        const card = button.closest(".card");
+        if (card) {
+          // Remove button options
+          const actionsDiv = card.querySelector("div[style*='justify-content']");
+          if (actionsDiv) {
+            actionsDiv.innerHTML = `
+              <button onclick="openReviewModal('Bob Jones', 'Conversational Spanish')" class="btn btn-amber" style="padding: 6px 12px; font-size: 0.75rem;">Rate & Review Partner</button>
+            `;
+          }
+          
+          // Edit badge
+          const badge = card.querySelector(".badge");
+          if (badge) {
+            badge.className = "badge badge-muted";
+            badge.textContent = "Completed";
+          }
+          
+          // Move node to Completed List
+          const pastList = document.getElementById("past-list");
+          if (pastList) {
+            pastList.appendChild(card);
+            updateCounts();
+          }
+        }
+      }
+    }
+
+    /**
+     * Cancel booking
+     */
+    function cancelSession(button) {
+      if (confirm("Are you sure you want to cancel this scheduled session? This will immediately return the held credits to the learner's balance.")) {
+        const card = button.closest(".card");
+        if (card) {
+          card.remove();
+          updateCounts();
+          alert("Session cancelled successfully. Credit holds released.");
+        }
+      }
+    }
+
+    /**
+     * Double-blind Review Modal controls
+     */
+    function openReviewModal(partner, session) {
+      document.getElementById("review-partner-name").textContent = partner;
+      document.getElementById("review-session-name").textContent = session;
+      document.getElementById("review-modal").style.display = "flex";
+    }
+
+    function closeReviewModal() {
+      document.getElementById("review-modal").style.display = "none";
+      document.getElementById("review-form").reset();
+    }
+
+    // Submit Review logic
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("review-form");
+      if (form) {
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+          
+          const rating = document.getElementById("review-rating").value;
+          const comment = document.getElementById("review-comment").value.trim();
+          
+          alert("Review submitted successfully! Due to double-blind mechanics, your review will remain hidden until your partner submits feedback or 7 days elapse.");
+          
+          // Disable button to prevent double submissions
+          const activeReviewBtn = document.getElementById("review-btn");
+          if (activeReviewBtn) {
+            activeReviewBtn.disabled = true;
+            activeReviewBtn.textContent = "Review Pending Partner";
+            activeReviewBtn.className = "btn btn-secondary";
+            activeReviewBtn.style.cursor = "default";
+            activeReviewBtn.removeAttribute("onclick");
+          }
+          
+          closeReviewModal();
+        });
+      }
+    });
+
+    /**
+     * Update sidebar count badges
+     */
+    function updateCounts() {
+      const upcoming = document.getElementById("upcoming-list").querySelectorAll(".card").length;
+      const past = document.getElementById("past-list").querySelectorAll(".card").length;
+      
+      document.getElementById("upcoming-count").textContent = `${upcoming} Session${upcoming === 1 ? '' : 's'}`;
+      document.getElementById("past-count").textContent = `${past} Session${past === 1 ? '' : 's'}`;
+    }
+  </script>
+</body>
+</html>

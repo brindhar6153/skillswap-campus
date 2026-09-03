@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Skills - SkillSwap Campus</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="../index.html" class="brand">
+        <div class="brand-icon">S</div>
+        <span>SkillSwap Campus</span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="skills.html" class="active">Skills</a></li>
+        <li><a href="requests.html">Requests</a></li>
+        <li><a href="sessions.html">Sessions</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="#" id="global-logout" class="nav-btn">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Skills Page Content -->
+  <main class="container dashboard-container">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <h1>Manage Skills</h1>
+        <p style="color: var(--text-muted);">Declare the skills you can offer to others or want to acquire.</p>
+      </div>
+      <button onclick="toggleAddSkillSection(true)" class="btn btn-primary" id="toggle-add-btn">Add New Skill Mapping</button>
+    </div>
+
+    <!-- Add Skill Form Card Container -->
+    <div class="card" id="add-skill-section" style="display: none; margin-bottom: 32px; animation: slideUp 0.2s ease-out;">
+      <h2 style="font-size: 1.2rem; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Add New Skill Profile Entry</h2>
+      
+      <form id="add-skill-form">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          
+          <div class="form-group">
+            <label for="skill-name" class="form-label">Skill Name</label>
+            <input type="text" id="skill-name" class="form-control" placeholder="e.g. Figma UI, French conversation, Calculus II" required>
+          </div>
+
+          <div class="form-group">
+            <label for="skill-category" class="form-label">Skill Category</label>
+            <select id="skill-category" class="form-control" required>
+              <option value="">-- Choose Category --</option>
+              <option value="Computer Science">Computer Science / Coding</option>
+              <option value="Languages">Languages & Writing</option>
+              <option value="Mathematics">Mathematics & Sciences</option>
+              <option value="Arts & Music">Arts, Photography & Music</option>
+              <option value="Professional Prep">Professional Prep & Business</option>
+              <option value="Fitness & Health">Fitness, Athletics & Health</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="skill-role" class="form-label">Role Type</label>
+            <select id="skill-role" class="form-control" required>
+              <option value="teach">I Can Teach This (Mentor)</option>
+              <option value="learn">I Want to Learn This (Mentee)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="skill-level" class="form-label">My Level / Target Proficiency</label>
+            <select id="skill-level" class="form-control" required>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+
+        </div>
+
+        <div class="form-group">
+          <label for="skill-desc" class="form-label">Brief Description (Topics, availability, goals)</label>
+          <textarea id="skill-desc" class="form-control" rows="3" placeholder="Explain what you want to teach or what topics you need help with..." required></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
+          <button type="button" onclick="toggleAddSkillSection(false)" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Skill</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Skills Lists Display -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;">
+      
+      <!-- List: Teaching -->
+      <div>
+        <div class="dashboard-section-header" style="border-bottom-color: var(--primary-color);">
+          <h2>Skills I Can Teach (Mentoring)</h2>
+          <span class="badge badge-teach" id="teach-count">2 Skills</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px;" id="teach-list">
+          
+          <!-- Skill item 1 -->
+          <div class="card" style="padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+              <h3 style="font-size: 1rem; font-weight: 700;">🐍 Python Programming</h3>
+              <span class="badge badge-teach">Advanced</span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+              Can tutor in lists, dictionaries, OOP, algorithms, and homework code debugging.
+            </p>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 8px; font-size: 0.75rem;">
+              <span style="color: var(--text-muted);">Category: Computer Science</span>
+              <button onclick="deleteSkill(this)" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.7rem; border-color: transparent; color: var(--danger-color);">Delete</button>
+            </div>
+          </div>
+
+          <!-- Skill item 2 -->
+          <div class="card" style="padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+              <h3 style="font-size: 1rem; font-weight: 700;">☕ Java Coding</h3>
+              <span class="badge badge-teach">Intermediate</span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+              Intermediate layouts, loops, functions, class configurations.
+            </p>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 8px; font-size: 0.75rem;">
+              <span style="color: var(--text-muted);">Category: Computer Science</span>
+              <button onclick="deleteSkill(this)" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.7rem; border-color: transparent; color: var(--danger-color);">Delete</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- List: Learning -->
+      <div>
+        <div class="dashboard-section-header" style="border-bottom-color: var(--secondary-color);">
+          <h2>Skills I Want to Learn (Acquiring)</h2>
+          <span class="badge badge-learn" id="learn-count">2 Skills</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px;" id="learn-list">
+          
+          <!-- Skill item 1 -->
+          <div class="card" style="padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+              <h3 style="font-size: 1rem; font-weight: 700;">🇫🇷 French Conversation</h3>
+              <span class="badge badge-learn">Beginner</span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+              Looking to improve speaking vocabulary and grammar before my study abroad.
+            </p>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 8px; font-size: 0.75rem;">
+              <span style="color: var(--text-muted);">Category: Languages</span>
+              <button onclick="deleteSkill(this)" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.7rem; border-color: transparent; color: var(--danger-color);">Delete</button>
+            </div>
+          </div>
+
+          <!-- Skill item 2 -->
+          <div class="card" style="padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+              <h3 style="font-size: 1rem; font-weight: 700;">🎨 UI/UX Design</h3>
+              <span class="badge badge-learn">Beginner</span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+              Willing to learn Figma grid layouts, component systems, and design rules.
+            </p>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 8px; font-size: 0.75rem;">
+              <span style="color: var(--text-muted);">Category: Arts & Music</span>
+              <button onclick="deleteSkill(this)" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.7rem; border-color: transparent; color: var(--danger-color);">Delete</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+        <p>&copy; 2026 SkillSwap Campus. All rights reserved. Restrict domain verification in use.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    /**
+     * Show/Hide Add Skill form
+     */
+    function toggleAddSkillSection(show) {
+      const section = document.getElementById("add-skill-section");
+      const toggleBtn = document.getElementById("toggle-add-btn");
+      
+      if (section) {
+        section.style.display = show ? "block" : "none";
+      }
+      if (toggleBtn) {
+        toggleBtn.style.display = show ? "none" : "block";
+      }
+    }
+
+    /**
+     * Handle Add Skill form submission dynamically to mock values in UI lists
+     */
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("add-skill-form");
+      if (form) {
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+          
+          const name = document.getElementById("skill-name").value.trim();
+          const category = document.getElementById("skill-category").value;
+          const role = document.getElementById("skill-role").value;
+          const level = document.getElementById("skill-level").value;
+          const desc = document.getElementById("skill-desc").value.trim();
+          
+          // Formulate HTML node
+          const skillCardHtml = `
+            <div class="card" style="padding: 16px; animation: slideUp 0.2s ease-out;">
+              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                <h3 style="font-size: 1rem; font-weight: 700;">${escapeHtml(name)}</h3>
+                <span class="badge ${role === 'teach' ? 'badge-teach' : 'badge-learn'}">${level.charAt(0).toUpperCase() + level.slice(1)}</span>
+              </div>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+                ${escapeHtml(desc)}
+              </p>
+              <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 8px; font-size: 0.75rem;">
+                <span style="color: var(--text-muted);">Category: ${escapeHtml(category)}</span>
+                <button onclick="deleteSkill(this)" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.7rem; border-color: transparent; color: var(--danger-color);">Delete</button>
+              </div>
+            </div>
+          `;
+
+          const listContainer = document.getElementById(role === 'teach' ? 'teach-list' : 'learn-list');
+          if (listContainer) {
+            listContainer.insertAdjacentHTML('beforeend', skillCardHtml);
+            
+            // Recompute counts
+            updateCounts();
+            
+            // Clean Form & close
+            form.reset();
+            toggleAddSkillSection(false);
+            alert("New skill mapping added successfully (UI Demo)!");
+          }
+        });
+      }
+    });
+
+    /**
+     * Delete Skill Node
+     */
+    function deleteSkill(button) {
+      if (confirm("Are you sure you want to remove this skill profile entry?")) {
+        const card = button.closest(".card");
+        if (card) {
+          card.remove();
+          updateCounts();
+        }
+      }
+    }
+
+    /**
+     * Compute portfolio totals dynamically
+     */
+    function updateCounts() {
+      const teachCount = document.getElementById("teach-list").querySelectorAll(".card").length;
+      const learnCount = document.getElementById("learn-list").querySelectorAll(".card").length;
+      
+      document.getElementById("teach-count").textContent = `${teachCount} Skill${teachCount === 1 ? '' : 's'}`;
+      document.getElementById("learn-count").textContent = `${learnCount} Skill${learnCount === 1 ? '' : 's'}`;
+    }
+
+    /**
+     * Escape special chars helper
+     */
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>

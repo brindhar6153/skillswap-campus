@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile - SkillSwap Campus</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="../index.html" class="brand">
+        <div class="brand-icon">S</div>
+        <span>SkillSwap Campus</span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="requests.html">Requests</a></li>
+        <li><a href="sessions.html">Sessions</a></li>
+        <li><a href="profile.html" class="active">Profile</a></li>
+        <li><a href="#" id="global-logout" class="nav-btn">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Profile Content Container -->
+  <main class="container dashboard-container">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+      <h1>My Student Profile</h1>
+      <button onclick="toggleEditModal(true)" class="btn btn-primary">Edit Profile Details</button>
+    </div>
+
+    <!-- Layout Grid -->
+    <div class="dashboard-grid">
+      
+      <!-- Left sidebar avatar + general meta details -->
+      <aside class="profile-sidebar">
+        
+        <div class="card" style="text-align: center;">
+          <div class="profile-avatar-large" id="profile-avatar" style="width: 120px; height: 120px; font-size: 3rem;">A</div>
+          <h2 id="profile-name" style="margin-bottom: 4px;">Alice Smith</h2>
+          <p id="profile-email" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">alice@university.edu</p>
+          <span class="badge badge-success">Verified Student</span>
+          
+          <div style="border-top: 1px solid var(--border-color); margin-top: 24px; padding-top: 20px; text-align: left; display: flex; flex-direction: column; gap: 12px; font-size: 0.9rem;">
+            <div><strong>Major:</strong> <span id="profile-major">Computer Science</span></div>
+            <div><strong>Graduation Year:</strong> <span id="profile-grad">2027</span></div>
+            <div><strong>Time Balance:</strong> <span style="color: var(--secondary-color); font-weight: 700;" id="profile-credits">2.00</span> Credits</div>
+          </div>
+        </div>
+
+        <!-- Availability Details Card -->
+        <div class="card">
+          <h3 style="font-size: 1rem; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Weekly Availability</h3>
+          <ul style="list-style: none; font-size: 0.85rem; display: flex; flex-direction: column; gap: 8px;" id="availability-list">
+            <li>🟢 <strong>Monday</strong>: 2:00 PM - 5:00 PM</li>
+            <li>🟢 <strong>Wednesday</strong>: 10:00 AM - 1:00 PM</li>
+            <li>🟢 <strong>Friday</strong>: 1:00 PM - 4:00 PM</li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- Right Column: Skills & Reviews -->
+      <div class="dashboard-main">
+        
+        <!-- Bio Card -->
+        <div class="card">
+          <h3 style="font-size: 1.1rem; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">Biography</h3>
+          <p id="profile-bio" style="color: var(--text-color); font-size: 0.95rem; line-height: 1.5;">
+            Hi, I am a Sophomore studying Computer Science. I can help with introductory programming (Python, Java) and algorithm design. I really want to learn Conversational French and basic UI design to build some side projects!
+          </p>
+        </div>
+
+        <!-- Skills Sections Grid -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+          
+          <!-- Skills offered -->
+          <div class="card">
+            <h3 style="font-size: 1.1rem; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; color: var(--primary-color);">Skills I Offer</h3>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px;" id="offered-skills-list">
+              <li style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;">
+                <span>🐍 Python Programming</span>
+                <span class="badge badge-teach">Advanced</span>
+              </li>
+              <li style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;">
+                <span>☕ Java Coding</span>
+                <span class="badge badge-teach">Intermediate</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Skills wanted -->
+          <div class="card">
+            <h3 style="font-size: 1.1rem; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; color: var(--secondary-color);">Skills I Want to Learn</h3>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px;" id="wanted-skills-list">
+              <li style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;">
+                <span>🇫🇷 French Conversation</span>
+                <span class="badge badge-learn">Beginner</span>
+              </li>
+              <li style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;">
+                <span>🎨 UI/UX Design</span>
+                <span class="badge badge-learn">Beginner</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Student Reviews and Ratings placeholder -->
+        <div class="card">
+          <h3 style="font-size: 1.1rem; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">Peer Review Feedback (As Tutor)</h3>
+          
+          <!-- Reviews list -->
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            
+            <!-- Review 1 -->
+            <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.9rem;">
+                <strong>John Doe</strong>
+                <span style="color: var(--secondary-color); font-weight: 700;">★ 5.0</span>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                "Alice was super helpful explaining lists and dict loops in Python. I feel much more prepared for my midterm exam!"
+              </p>
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Aug 12, 2026</div>
+            </div>
+
+            <!-- Review 2 -->
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.9rem;">
+                <strong>Emma Stone</strong>
+                <span style="color: var(--secondary-color); font-weight: 700;">★ 4.8</span>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                "Great session. Went over standard Java logic blocks. Clear communicator and punctual."
+              </p>
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Jul 28, 2026</div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Edit Profile Modal Overlay -->
+  <div id="edit-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
+    <div class="card" style="width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+      <h2 style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Edit Profile Details</h2>
+      
+      <form id="edit-profile-form">
+        <div class="form-group">
+          <label for="edit-name" class="form-label">Full Name</label>
+          <input type="text" id="edit-name" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-major" class="form-label">College Major</label>
+          <input type="text" id="edit-major" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-grad" class="form-label">Graduation Year</label>
+          <input type="number" id="edit-grad" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-bio" class="form-label">Biography</label>
+          <textarea id="edit-bio" class="form-control" rows="4" required></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button type="button" onclick="toggleEditModal(false)" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+        <p>&copy; 2026 SkillSwap Campus. All rights reserved. Restrict domain verification in use.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      loadProfileData();
+      initEditForm();
+      
+      document.addEventListener("userDataLoaded", (e) => {
+        renderProfileInfo(e.detail);
+      });
+    });
+
+    function renderProfileInfo(user) {
+      document.getElementById("profile-name").textContent = user.name;
+      document.getElementById("profile-email").textContent = user.email;
+      document.getElementById("profile-major").textContent = user.course || user.major || "";
+      document.getElementById("profile-grad").textContent = user.grad_year || "";
+      document.getElementById("profile-bio").textContent = user.bio || "No bio added yet.";
+      document.getElementById("profile-avatar").textContent = user.name.charAt(0).toUpperCase();
+      
+      if (user.credits !== undefined) {
+        document.getElementById("profile-credits").textContent = Number(user.credits).toFixed(2);
+      }
+
+      // Fill Form Fields in Modal
+      document.getElementById("edit-name").value = user.name;
+      document.getElementById("edit-major").value = user.course || user.major || "";
+      document.getElementById("edit-grad").value = user.grad_year || "";
+      document.getElementById("edit-bio").value = user.bio || "";
+    }
+
+    /**
+     * Load user profile details from mock storage
+     */
+    function loadProfileData() {
+      const loggedInUser = localStorage.getItem("skillswap_user");
+      if (loggedInUser) {
+        renderProfileInfo(JSON.parse(loggedInUser));
+      }
+    }
+
+    /**
+     * Toggle Edit Modal visibility state
+     */
+    function toggleEditModal(show) {
+      const modal = document.getElementById("edit-modal");
+      if (modal) {
+        modal.style.display = show ? "flex" : "none";
+      }
+    }
+
+    /**
+     * Handle edit form submit action
+     */
+    function initEditForm() {
+      const editForm = document.getElementById("edit-profile-form");
+      if (editForm) {
+        editForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          
+          const loggedInUser = localStorage.getItem("skillswap_user");
+          if (loggedInUser) {
+            const user = JSON.parse(loggedInUser);
+            
+            user.name = document.getElementById("edit-name").value.trim();
+            user.major = document.getElementById("edit-major").value.trim();
+            user.grad_year = parseInt(document.getElementById("edit-grad").value);
+            user.bio = document.getElementById("edit-bio").value.trim();
+            
+            localStorage.setItem("skillswap_user", JSON.stringify(user));
+            
+            loadProfileData(); // Reload UI text
+            toggleEditModal(false); // Close Modal
+            alert("Profile details updated successfully!");
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>

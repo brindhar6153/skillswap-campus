@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - SkillSwap Campus</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/auth.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="../index.html" class="brand">
+        <div class="brand-icon">S</div>
+        <span>SkillSwap Campus</span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="login.html">Login</a></li>
+        <li><a href="register.html" class="active nav-btn">Register</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Register Container -->
+  <main class="auth-container" style="padding: 20px 20px;">
+    <div class="auth-card" style="max-width: 520px; padding: 30px;">
+      <div class="auth-header" style="margin-bottom: 20px;">
+        <h1>Join SkillSwap Campus</h1>
+        <p>Register using your university email to start swapping skills</p>
+      </div>
+
+      <div class="auth-alert auth-alert-danger" id="domain-error-alert"></div>
+
+      <form id="register-form" class="auth-form" novalidate>
+        <div class="form-group">
+          <label for="full-name" class="form-label">Full Name</label>
+          <input type="text" id="full-name" class="form-control" placeholder="e.g. Alice Smith" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email" class="form-label">College Email Address (must end in .edu)</label>
+          <input type="email" id="email" class="form-control" placeholder="username@college.edu" required>
+        </div>
+
+        <div class="form-group">
+          <label for="college" class="form-label">College / University Name</label>
+          <input type="text" id="college" class="form-control" placeholder="e.g. State University" required>
+        </div>
+
+        <div class="form-group">
+          <label for="course" class="form-label">College Major / Field of Study</label>
+          <input type="text" id="course" class="form-control" placeholder="e.g. Computer Science" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" id="password" class="form-control" placeholder="Minimum 6 characters" required>
+        </div>
+
+        <div class="form-group">
+          <label for="confirm-password" class="form-label">Confirm Password</label>
+          <input type="password" id="confirm-password" class="form-control" placeholder="Re-enter password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 16px;">Create Account</button>
+      </form>
+
+      <div class="auth-footer" style="margin-top: 16px;">
+        <p>Already have an account? <a href="login.html">Log in here</a></p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+        <p>&copy; 2026 SkillSwap Campus. All rights reserved. Restrict domain verification in use.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/main.js"></script>
+  <script src="../js/auth.js"></script>
+</body>
+</html>

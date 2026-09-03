@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exchange Requests - SkillSwap Campus</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="../index.html" class="brand">
+        <div class="brand-icon">S</div>
+        <span>SkillSwap Campus</span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="requests.html" class="active">Requests</a></li>
+        <li><a href="sessions.html">Sessions</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="#" id="global-logout" class="nav-btn">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Requests Content Container -->
+  <main class="container dashboard-container">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <h1>Exchange Proposals</h1>
+        <p style="color: var(--text-muted);">Coordinate incoming invitations or check the status of sent requests.</p>
+      </div>
+      <button onclick="toggleSendProposalSection(true)" class="btn btn-primary" id="toggle-proposal-btn">Propose Swap with Partner</button>
+    </div>
+
+    <!-- Propose Swap Mock Form (Visually complete, functions on alert/mock) -->
+    <div class="card" id="send-proposal-section" style="display: none; margin-bottom: 32px; animation: slideUp 0.2s ease-out;">
+      <h2 style="font-size: 1.2rem; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Create New Exchange Proposal</h2>
+      
+      <form id="proposal-form">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          
+          <div class="form-group">
+            <label for="prop-recipient" class="form-label">Find Student (Teammate)</label>
+            <select id="prop-recipient" class="form-control" required>
+              <option value="">-- Choose Partner --</option>
+              <option value="Bob Jones">Bob Jones (Teaches: Spanish)</option>
+              <option value="Chloe Chen">Chloe Chen (Teaches: UI Design)</option>
+              <option value="Daniel Wu">Daniel Wu (Teaches: Calculus)</option>
+              <option value="Grace Kelly">Grace Kelly (Teaches: Video Editing)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="prop-teach" class="form-label">Skill I Will Teach Them</label>
+            <select id="prop-teach" class="form-control" required>
+              <option value="Python Programming">Python Programming</option>
+              <option value="Java Coding">Java Coding</option>
+              <option value="none">One-Way (Spend 1 Credit Instead)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="prop-learn" class="form-label">Skill I Want to Learn from Them</label>
+            <select id="prop-learn" class="form-control" required>
+              <option value="Conversational Spanish">Conversational Spanish</option>
+              <option value="UI/UX Figma Design">UI/UX Figma Design</option>
+              <option value="Calculus II Helper">Calculus II Helper</option>
+              <option value="Adobe Premiere Video Editing">Adobe Premiere Video Editing</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="prop-credits" class="form-label">Estimated Swap Hours / Credits</label>
+            <select id="prop-credits" class="form-control" required>
+              <option value="1">1.00 Hour (1 Credit)</option>
+              <option value="2" selected>2.00 Hours (2 Credits)</option>
+              <option value="3">3.00 Hours (3 Credits)</option>
+            </select>
+          </div>
+
+        </div>
+
+        <div class="form-group">
+          <label for="prop-msg" class="form-label">Custom Message Proposal Pitch</label>
+          <textarea id="prop-msg" class="form-control" rows="3" placeholder="Suggest a time and pitch why you want to swap..." required></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
+          <button type="button" onclick="toggleSendProposalSection(false)" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Send Proposal</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Grid lists for Sent vs Received -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;">
+      
+      <!-- List: Incoming -->
+      <div>
+        <div class="dashboard-section-header" style="border-bottom-color: var(--success-color);">
+          <h2>Incoming Invites (Needs Review)</h2>
+          <span class="badge badge-success" id="incoming-count">1 Request</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px;" id="incoming-list">
+          
+          <!-- Incoming proposal 1 -->
+          <div class="card" style="padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+              <h3 style="font-size: 1.05rem;">David Kim</h3>
+              <span class="badge badge-teach">Incoming</span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+              <strong>Wants:</strong> Python Programming (Taught by you)<br>
+              <strong>Offers:</strong> Math Tutoring (Discrete Math)<br>
+              <strong>Duration:</strong> 1.50 Hours (1.50 credits)<br>
+              <strong>Pitch:</strong> "Hey Alice, saw your Python portfolio. Need help debugging recursion scripts. I can tutor you in Discrete structures in return!"
+            </p>
+            <div style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border-color); padding-top: 12px; font-size: 0.75rem;">
+              <button onclick="acceptRequest(this, 'David Kim', 'Math Tutoring')" class="btn btn-success" style="padding: 6px 12px; font-size: 0.75rem;">Accept & Schedule</button>
+              <button onclick="declineRequest(this)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem; color: var(--danger-color);">Decline</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- List: Sent -->
+      <div>
+        <div class="dashboard-section-header" style="border-bottom-color: var(--primary-color);">
+          <h2>Sent Proposals (Pending Partner)</h2>
+          <span class="badge badge-teach" id="sent-count">1 Request</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px;" id="sent-list">
+          
+          <!-- Sent proposal 1 -->
+          <div class="card" style="padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+              <h3 style="font-size: 1.05rem;">Emma Watson</h3>
+              <span class="badge badge-learn">Sent</span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+              <strong>Requested:</strong> French Conversation (From Emma)<br>
+              <strong>Offers:</strong> Java Coding (Taught by you)<br>
+              <strong>Duration:</strong> 2.00 Hours (2.00 credits)<br>
+              <strong>Message:</strong> "Salut Emma, let us do a coffee-shop swap! 1 hour of basic conversational French for 1 hour of Java coding layouts."
+            </p>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 12px; font-size: 0.75rem;">
+              <span class="badge badge-muted">Pending Response</span>
+              <button onclick="cancelRequest(this)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem; border-color: transparent; color: var(--text-muted);">Cancel Proposal</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+        <p>&copy; 2026 SkillSwap Campus. All rights reserved. Restrict domain verification in use.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    /**
+     * Show/Hide Propose Swap form
+     */
+    function toggleSendProposalSection(show) {
+      const section = document.getElementById("send-proposal-section");
+      const toggleBtn = document.getElementById("toggle-proposal-btn");
+      
+      if (section) {
+        section.style.display = show ? "block" : "none";
+      }
+      if (toggleBtn) {
+        toggleBtn.style.display = show ? "none" : "block";
+      }
+    }
+
+    /**
+     * Handle Propose form submit
+     */
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("proposal-form");
+      if (form) {
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+          
+          const recipient = document.getElementById("prop-recipient").value;
+          const teach = document.getElementById("prop-teach").value;
+          const learn = document.getElementById("prop-learn").value;
+          const credits = document.getElementById("prop-credits").value;
+          const msg = document.getElementById("prop-msg").value.trim();
+          
+          const newProposalHtml = `
+            <div class="card" style="padding: 20px; animation: slideUp 0.2s ease-out;">
+              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                <h3 style="font-size: 1.05rem;">${escapeHtml(recipient)}</h3>
+                <span class="badge badge-learn">Sent</span>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+                <strong>Requested:</strong> ${escapeHtml(learn)}<br>
+                <strong>Offers:</strong> ${teach === 'none' ? 'None (Credits)' : escapeHtml(teach)}<br>
+                <strong>Duration:</strong> ${escapeHtml(credits)}.00 Hours (${escapeHtml(credits)}.00 credits)<br>
+                <strong>Message:</strong> "${escapeHtml(msg)}"
+              </p>
+              <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 12px; font-size: 0.75rem;">
+                <span class="badge badge-muted">Pending Response</span>
+                <button onclick="cancelRequest(this)" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem; border-color: transparent; color: var(--text-muted);">Cancel Proposal</button>
+              </div>
+            </div>
+          `;
+
+          const listContainer = document.getElementById('sent-list');
+          if (listContainer) {
+            listContainer.insertAdjacentHTML('beforeend', newProposalHtml);
+            
+            updateCounts();
+            form.reset();
+            toggleSendProposalSection(false);
+            alert(`Proposal successfully dispatched to ${recipient}!`);
+          }
+        });
+      }
+    });
+
+    /**
+     * Accept Request (redirects or triggers alert)
+     */
+    function acceptRequest(button, partnerName, skillName) {
+      alert(`Accepted proposal! Scheduling session with ${partnerName} for ${skillName}. You can see this under the Sessions panel.`);
+      const card = button.closest(".card");
+      if (card) {
+        card.remove();
+        updateCounts();
+      }
+    }
+
+    /**
+     * Decline Request
+     */
+    function declineRequest(button) {
+      if (confirm("Are you sure you want to decline this incoming invite?")) {
+        const card = button.closest(".card");
+        if (card) {
+          card.remove();
+          updateCounts();
+        }
+      }
+    }
+
+    /**
+     * Cancel Request
+     */
+    function cancelRequest(button) {
+      if (confirm("Are you sure you want to cancel this sent proposal?")) {
+        const card = button.closest(".card");
+        if (card) {
+          card.remove();
+          updateCounts();
+        }
+      }
+    }
+
+    /**
+     * Update header counts
+     */
+    function updateCounts() {
+      const incoming = document.getElementById("incoming-list").querySelectorAll(".card").length;
+      const sent = document.getElementById("sent-list").querySelectorAll(".card").length;
+      
+      document.getElementById("incoming-count").textContent = `${incoming} Request${incoming === 1 ? '' : 's'}`;
+      document.getElementById("sent-count").textContent = `${sent} Request${sent === 1 ? '' : 's'}`;
+    }
+
+    /**
+     * Escape special chars
+     */
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: skillswap-campus-api
+    runtime: python
+    buildCommand: "pip install -r backend/requirements.txt && python backend/init_db.py"
+    startCommand: "gunicorn --chdir backend run:app"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: skillswap-campus-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_EMAIL_DOMAIN
+        value: ".edu"
+      - key: SESSION_COOKIE_SECURE
+        value: "True"
+
+databases:
+  - name: skillswap-campus-db
+    databaseName: skillswap_campus_db
+    user: skillswap_user
+    plan: free
