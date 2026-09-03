@@ -1,0 +1,33 @@
+# Environmental variables
+.env
+.env.*
+.env.local
+
+# Keystores and private signing credentials
+*.jks
+*.keystore
+keystore.properties
+local.properties
+
+# Python byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+venv/
+ENV/
+
+# Flask/SQLAlchemy instances
+instance/
+
+# IDE settings
+.idea/
+.vscode/
+
+# Testing caches
+.pytest_cache/
+.coverage
+htmlcov/
+
