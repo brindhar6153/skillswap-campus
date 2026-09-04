@@ -2,8 +2,9 @@ services:
   - type: web
     name: skillswap-campus-api
     runtime: python
-    buildCommand: "pip install -r backend/requirements.txt && python backend/init_db.py"
-    startCommand: "gunicorn --chdir backend run:app"
+    rootDir: backend
+    buildCommand: "pip install -r requirements.txt && python init_db.py"
+    startCommand: "gunicorn run:app"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
