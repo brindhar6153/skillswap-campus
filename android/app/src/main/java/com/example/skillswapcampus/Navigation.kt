@@ -27,24 +27,31 @@ fun MainNavigation() {
     val authViewModel: AuthViewModel = viewModel()
     val authState by authViewModel.authState.collectAsStateWithLifecycle()
 
+    val handleBack: () -> Unit = {
+        if (backStack.size > 1) {
+            backStack.removeLastOrNull()
+        }
+    }
+
     // Automatically manage backstack based on AuthState
     LaunchedEffect(authState) {
         when (authState) {
             is AuthState.Authenticated -> {
-                // Remove all other routes and push Home to prevent going back to login
-                while (backStack.size > 0) {
-                    backStack.removeLastOrNull()
+                if (backStack.lastOrNull() != Home) {
+                    backStack.add(Home)
+                    while (backStack.size > 1) {
+                        backStack.removeAt(0)
+                    }
                 }
-                backStack.add(Home)
             }
             is AuthState.Unauthenticated -> {
                 // Redirect to Login if currently on a dashboard page
                 val lastKey = backStack.lastOrNull()
                 if (lastKey != Splash && lastKey != Login && lastKey != Register) {
-                    while (backStack.size > 0) {
-                        backStack.removeLastOrNull()
-                    }
                     backStack.add(Login)
+                    while (backStack.size > 1) {
+                        backStack.removeAt(0)
+                    }
                 }
             }
             else -> {}
@@ -53,7 +60,7 @@ fun MainNavigation() {
 
     NavDisplay(
         backStack = backStack,
-        onBack = { backStack.removeLastOrNull() },
+        onBack = handleBack,
         entryProvider = entryProvider {
             entry<Splash> {
                 SplashScreen(
@@ -65,56 +72,56 @@ fun MainNavigation() {
                 LoginScreen(
                     authViewModel = authViewModel,
                     onNavigate = { key -> backStack.add(key) },
-                    onBack = { backStack.removeLastOrNull() }
+                    onBack = handleBack
                 )
             }
             entry<Register> {
                 RegisterScreen(
                     authViewModel = authViewModel,
                     onNavigate = { key -> backStack.add(key) },
-                    onBack = { backStack.removeLastOrNull() }
+                    onBack = handleBack
                 )
             }
             entry<Home> {
                 HomeScreen(
                     authViewModel = authViewModel,
                     onNavigate = { key -> backStack.add(key) },
-                    onBack = { backStack.removeLastOrNull() }
+                    onBack = handleBack
                 )
             }
             entry<Profile> {
                 ProfileScreen(
                     authViewModel = authViewModel,
                     onNavigate = { key -> backStack.add(key) },
-                    onBack = { backStack.removeLastOrNull() }
+                    onBack = handleBack
                 )
             }
             entry<Skills> {
                 SkillsScreen(
                     authViewModel = authViewModel,
                     onNavigate = { key -> backStack.add(key) },
-                    onBack = { backStack.removeLastOrNull() }
+                    onBack = handleBack
                 )
             }
             entry<Matches> {
                 MatchesScreen(
                     authViewModel = authViewModel,
                     onNavigate = { key -> backStack.add(key) },
-                    onBack = { backStack.removeLastOrNull() }
+                    onBack = handleBack
                 )
             }
             entry<SwapRequests> {
                 SwapRequestsScreen(
                     authViewModel = authViewModel,
                     onNavigate = { key -> backStack.add(key) },
-                    onBack = { backStack.removeLastOrNull() }
+                    onBack = handleBack
                 )
             }
             entry<Sessions> {
                 SessionsScreen(
                     authViewModel = authViewModel,
                     onNavigate = { key -> backStack.add(key) },
-                    onBack = { backStack.removeLastOrNull() }
+                    onBack = handleBack
                 )
             }
             entry<TimeCredits> {
@@ -122,7 +129,7 @@ fun MainNavigation() {
                     title = "Time Bank Transactions",
                     description = "Audit ledger transfers, starting credit grants, pending locks, and completed tutor credit balances.",
                     icon = Icons.Default.Info,
-                    onBack = { backStack.removeLastOrNull() },
+                    onBack = handleBack,
                     onNavigate = { key -> backStack.add(key) }
                 )
             }
@@ -131,7 +138,7 @@ fun MainNavigation() {
                     title = "Double-Blind Reviews",
                     description = "Post feedback for tutoring sessions. Reviews remain completely hidden until both partners submit feedback, protecting ratings objectivity.",
                     icon = Icons.Default.Star,
-                    onBack = { backStack.removeLastOrNull() },
+                    onBack = handleBack,
                     onNavigate = { key -> backStack.add(key) }
                 )
             }
@@ -140,7 +147,7 @@ fun MainNavigation() {
                     title = "Alerts & Notifications",
                     description = "Stay updated on newly matched profiles, booking confirmations, session completions, and ledger balance alerts.",
                     icon = Icons.Default.Notifications,
-                    onBack = { backStack.removeLastOrNull() },
+                    onBack = handleBack,
                     onNavigate = { key -> backStack.add(key) }
                 )
             }
