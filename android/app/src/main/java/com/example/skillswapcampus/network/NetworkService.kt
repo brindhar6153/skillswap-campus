@@ -17,7 +17,7 @@ import retrofit2.http.Path
  */
 object AppConfig {
     // Production public HTTPS API base URL
-    var baseUrl: String = "https://skillswap-campus-api.onrender.com"
+    var baseUrl: String = "https://skillswap-campus-890k.onrender.com/"
 }
 
 /**
