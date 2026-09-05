@@ -23,12 +23,29 @@ def create_app(config_class=Config):
     # Import models to register tables with SQLAlchemy metadata
     from app import models
 
-    # Ensure all tables exist in database on startup
+    # Ensure all tables exist and skills are populated in database on startup
     with app.app_context():
         try:
             db.create_all()
+            from app.models.skill import Skill
+            from app.utils.skills_data import CATEGORIZED_SKILLS
+            
+            # Sync skills catalog if missing
+            synced = False
+            for s_info in CATEGORIZED_SKILLS:
+                name = s_info["name"].strip()
+                category = s_info["category"].strip()
+                existing = Skill.query.filter(db.func.lower(Skill.name) == name.lower()).first()
+                if not existing:
+                    db.session.add(Skill(name=name, category=category))
+                    synced = True
+                elif existing.category != category:
+                    existing.category = category
+                    synced = True
+            if synced:
+                db.session.commit()
         except Exception as e:
-            app.logger.error(f"Error creating database tables on startup: {e}")
+            app.logger.error(f"Error initializing/syncing database on startup: {e}")
 
     # Register blueprints (routes)
     app.register_blueprint(health_bp, url_prefix='')

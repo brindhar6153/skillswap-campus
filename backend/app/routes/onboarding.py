@@ -78,22 +78,30 @@ def update_profile():
 
 @onboarding_bp.route('/api/skills', methods=['GET'])
 def get_skills():
-    """Return all available tradeable skills catalog records."""
-    # Seed default skills if catalog is completely empty to support test suites
+    """Return all available tradeable skills catalog records, optionally filtered by category or search query."""
+    from app.utils.skills_data import CATEGORIZED_SKILLS
+    
+    # Ensure skills exist
     if not Skill.query.first():
-        default_skills = [
-            ("Python Programming", "Technology"),
-            ("Conversational Spanish", "Languages"),
-            ("Calculus I", "Mathematics"),
-            ("Web Development", "Technology"),
-            ("Graphic Design", "Arts"),
-            ("Classical Guitar", "Music")
-        ]
-        for name, category in default_skills:
-            db.session.add(Skill(name=name, category=category))
+        for s_info in CATEGORIZED_SKILLS:
+            db.session.add(Skill(name=s_info["name"], category=s_info["category"]))
         db.session.commit()
 
-    skills = Skill.query.all()
+    category_filter = request.args.get('category', '').strip()
+    search_query = request.args.get('search', '').strip()
+
+    query = Skill.query
+    if category_filter:
+        query = query.filter(db.func.lower(Skill.category) == category_filter.lower())
+    if search_query:
+        query = query.filter(
+            db.or_(
+                Skill.name.ilike(f"%{search_query}%"),
+                Skill.category.ilike(f"%{search_query}%")
+            )
+        )
+
+    skills = query.order_by(Skill.category.asc(), Skill.name.asc()).all()
     return jsonify([
         {"id": s.id, "name": s.name, "category": s.category} for s in skills
     ]), 200

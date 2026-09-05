@@ -1,7 +1,9 @@
 package com.example.skillswapcampus.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -795,10 +797,14 @@ fun SkillsScreen(
     var isLoadingGlobal by remember { mutableStateOf(true) }
     val saveSkillsState by authViewModel.saveSkillsState.collectAsStateWithLifecycle()
 
-    var selectedSkillIndex by remember { mutableStateOf(0) }
-    var selectedRoleTeach by remember { mutableStateOf(true) } 
-    var selectedProficiency by remember { mutableStateOf("beginner") }
-    var showDropdownExpanded by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
+    var selectedCategoryFilter by remember { mutableStateOf("All") }
+    var activePortfolioTab by remember { mutableStateOf(0) } // 0 = Teach, 1 = Learn
+
+    // Dialog state for adding/editing a skill
+    var skillToConfigure by remember { mutableStateOf<Skill?>(null) }
+    var configRoleTeach by remember { mutableStateOf(true) }
+    var configProficiency by remember { mutableStateOf("beginner") }
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -822,7 +828,27 @@ fun SkillsScreen(
 
     val proficiencyOptions = listOf("beginner", "intermediate", "advanced")
 
-    AppScreenScaffold(title = "My Skills Mapping", onBack = onBack, onNavigate = onNavigate) { innerPadding ->
+    // Extract categories
+    val categories = remember(globalSkills) {
+        listOf("All") + globalSkills.map { it.category }.distinct().sorted()
+    }
+
+    // Filter skills by search query and category
+    val filteredSkills = remember(globalSkills, searchQuery, selectedCategoryFilter) {
+        globalSkills.filter { skill ->
+            val matchesCategory = (selectedCategoryFilter == "All" || skill.category.equals(selectedCategoryFilter, ignoreCase = true))
+            val matchesSearch = searchQuery.isBlank() ||
+                    skill.name.contains(searchQuery, ignoreCase = true) ||
+                    skill.category.contains(searchQuery, ignoreCase = true)
+            matchesCategory && matchesSearch
+        }
+    }
+
+    val groupedSkills = remember(filteredSkills) {
+        filteredSkills.groupBy { it.category }
+    }
+
+    AppScreenScaffold(title = "Skills & Expertise", onBack = onBack, onNavigate = onNavigate) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -830,145 +856,124 @@ fun SkillsScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            Text("Skills Portfolio Setup", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp))
+            Text(
+                text = "Skill Portfolio Management",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+            Text(
+                text = "Select technologies you can teach and skills you want to learn to get matched with peers.",
+                fontSize = 13.sp,
+                color = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
-            Text("Skills I Can Teach", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
-            Card(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
+            // Current Portfolio Active Tabs
+            TabRow(
+                selectedTabIndex = activePortfolioTab,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                Tab(
+                    selected = activePortfolioTab == 0,
+                    onClick = { activePortfolioTab = 0 },
+                    text = { Text("Can Teach (${localTeach.size})", fontWeight = FontWeight.Bold) }
+                )
+                Tab(
+                    selected = activePortfolioTab == 1,
+                    onClick = { activePortfolioTab = 1 },
+                    text = { Text("Want to Learn (${localLearn.size})", fontWeight = FontWeight.Bold) }
+                )
+            }
+
+            // Active Portfolio Card
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {
                 Column(modifier = Modifier.padding(12.dp)) {
-                    if (localTeach.isEmpty()) {
-                        Text("No teaching skills selected.", color = MaterialTheme.colorScheme.secondary)
+                    val currentList = if (activePortfolioTab == 0) localTeach else localLearn
+                    val emptyMessage = if (activePortfolioTab == 0) {
+                        "No teaching skills selected yet. Browse below to add skills you can teach!"
                     } else {
-                        localTeach.forEach { skill ->
+                        "No learning goals selected yet. Browse below to add skills you want to learn!"
+                    }
+
+                    if (currentList.isEmpty()) {
+                        Text(
+                            text = emptyMessage,
+                            color = MaterialTheme.colorScheme.secondary,
+                            fontSize = 13.sp,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    } else {
+                        currentList.forEach { skill ->
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("• ${skill.name} (${skill.proficiency.replaceFirstChar { it.uppercase() }})")
-                                IconButton(onClick = {
-                                    localTeach = localTeach.filter { it.skillId != skill.skillId }
-                                }) {
-                                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Remove", tint = MaterialTheme.colorScheme.error)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            Text("Skills I Want To Learn", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 8.dp))
-            Card(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    if (localLearn.isEmpty()) {
-                        Text("No learning skills selected.", color = MaterialTheme.colorScheme.secondary)
-                    } else {
-                        localLearn.forEach { skill ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("• ${skill.name} (${skill.proficiency.replaceFirstChar { it.uppercase() }})")
-                                IconButton(onClick = {
-                                    localLearn = localLearn.filter { it.skillId != skill.skillId }
-                                }) {
-                                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Remove", tint = MaterialTheme.colorScheme.error)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            Text("Add Skill to Portfolio", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(bottom = 8.dp))
-            if (isLoadingGlobal) {
-                CircularProgressIndicator(modifier = Modifier.padding(vertical = 12.dp).align(Alignment.CenterHorizontally))
-            } else if (globalSkills.isNotEmpty()) {
-                Card(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Box(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
-                            OutlinedButton(
-                                onClick = { showDropdownExpanded = true },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("Selected Skill: ${globalSkills.getOrNull(selectedSkillIndex)?.name ?: "None"}")
-                            }
-                            DropdownMenu(
-                                expanded = showDropdownExpanded,
-                                onDismissRequest = { showDropdownExpanded = false }
-                            ) {
-                                globalSkills.forEachIndexed { idx, s ->
-                                    DropdownMenuItem(
-                                        text = { Text(s.name) },
-                                        onClick = {
-                                            selectedSkillIndex = idx
-                                            showDropdownExpanded = false
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = skill.name,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 15.sp
+                                    )
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Surface(
+                                            color = MaterialTheme.colorScheme.primaryContainer,
+                                            shape = RoundedCornerShape(4.dp)
+                                        ) {
+                                            Text(
+                                                text = skill.category,
+                                                fontSize = 11.sp,
+                                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                            )
                                         }
+                                        Surface(
+                                            color = MaterialTheme.colorScheme.secondaryContainer,
+                                            shape = RoundedCornerShape(4.dp)
+                                        ) {
+                                            Text(
+                                                text = skill.proficiency.replaceFirstChar { it.uppercase() },
+                                                fontSize = 11.sp,
+                                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                                IconButton(
+                                    onClick = {
+                                        if (activePortfolioTab == 0) {
+                                            localTeach = localTeach.filter { it.skillId != skill.skillId }
+                                        } else {
+                                            localLearn = localLearn.filter { it.skillId != skill.skillId }
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Remove skill",
+                                        tint = MaterialTheme.colorScheme.error
                                     )
                                 }
                             }
-                        }
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(bottom = 12.dp)
-                        ) {
-                            Text("Exchange Role: ", fontWeight = FontWeight.Bold)
-                            RadioButton(
-                                selected = selectedRoleTeach,
-                                onClick = { selectedRoleTeach = true }
-                            )
-                            Text("Teach")
-                            Spacer(modifier = Modifier.width(16.dp))
-                            RadioButton(
-                                selected = !selectedRoleTeach,
-                                onClick = { selectedRoleTeach = false }
-                            )
-                            Text("Learn")
-                        }
-
-                        Text("Proficiency Level:", fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            proficiencyOptions.forEach { opt ->
-                                FilterChip(
-                                    selected = selectedProficiency == opt,
-                                    onClick = { selectedProficiency = opt },
-                                    label = { Text(opt.replaceFirstChar { it.uppercase() }) }
-                                )
-                            }
-                        }
-
-                        Button(
-                            onClick = {
-                                val s = globalSkills.getOrNull(selectedSkillIndex) ?: return@Button
-                                val newInfo = UserSkillInfo(
-                                    skillId = s.id,
-                                    name = s.name,
-                                    category = s.category,
-                                    proficiency = selectedProficiency
-                                )
-                                if (selectedRoleTeach) {
-                                    if (localTeach.none { it.skillId == s.id }) {
-                                        localTeach = localTeach + newInfo
-                                    }
-                                } else {
-                                    if (localLearn.none { it.skillId == s.id }) {
-                                        localLearn = localLearn + newInfo
-                                    }
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
-                        ) {
-                            Text("Add Skill to List")
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 2.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                         }
                     }
                 }
             }
 
-            // Display save result status card
+            // Save status card
             when (saveSkillsState) {
                 is OperationState.Success -> {
                     Card(
@@ -999,8 +1004,9 @@ fun SkillsScreen(
                 else -> {}
             }
 
+            // Save Portfolio Button
             if (saveSkillsState is OperationState.Loading) {
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
             } else {
@@ -1010,14 +1016,247 @@ fun SkillsScreen(
                         val learnList = localLearn.map { UserSkill(it.skillId, "learn", it.proficiency) }
                         authViewModel.saveSkills(teachList, learnList)
                     },
-                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                    modifier = Modifier.fillMaxWidth().height(48.dp).padding(bottom = 8.dp),
                     shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
+                    Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text("Save Skills Portfolio", fontWeight = FontWeight.Bold)
                 }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Browse & Search Catalog Section
+            Text(
+                text = "Browse Technology Skills Catalog",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            // Search Bar
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text("Search skills by name or category...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                trailingIcon = {
+                    if (searchQuery.isNotBlank()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Close, contentDescription = "Clear")
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                shape = RoundedCornerShape(10.dp),
+                singleLine = true
+            )
+
+            // Category Filter Chips
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                categories.forEach { cat ->
+                    FilterChip(
+                        selected = selectedCategoryFilter == cat,
+                        onClick = { selectedCategoryFilter = cat },
+                        label = { Text(cat) }
+                    )
+                }
+            }
+
+            if (isLoadingGlobal) {
+                Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else if (filteredSkills.isEmpty()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Text(
+                        text = "No skills match your search query.",
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.padding(16.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                // Grouped Categorized Skills Display
+                groupedSkills.forEach { (categoryName, skillsInCategory) ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            // Category Header
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = categoryName,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Surface(
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Text(
+                                        text = "${skillsInCategory.size} skills",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+
+                            // Skills list in this category
+                            skillsInCategory.forEach { skill ->
+                                val isTeaching = localTeach.any { it.skillId == skill.id }
+                                val isLearning = localLearn.any { it.skillId == skill.id }
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 6.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(text = skill.name, fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                                        if (isTeaching || isLearning) {
+                                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                                if (isTeaching) {
+                                                    val teachInfo = localTeach.firstOrNull { it.skillId == skill.id }
+                                                    Text(
+                                                        text = "Teaching (${teachInfo?.proficiency?.replaceFirstChar { it.uppercase() }})",
+                                                        fontSize = 11.sp,
+                                                        color = MaterialTheme.colorScheme.primary
+                                                    )
+                                                }
+                                                if (isLearning) {
+                                                    val learnInfo = localLearn.firstOrNull { it.skillId == skill.id }
+                                                    Text(
+                                                        text = "Learning (${learnInfo?.proficiency?.replaceFirstChar { it.uppercase() }})",
+                                                        fontSize = 11.sp,
+                                                        color = MaterialTheme.colorScheme.tertiary
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    // Add/Configure Button
+                                    OutlinedButton(
+                                        onClick = {
+                                            skillToConfigure = skill
+                                            configRoleTeach = (activePortfolioTab == 0)
+                                            configProficiency = "beginner"
+                                        },
+                                        shape = RoundedCornerShape(8.dp),
+                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                                        modifier = Modifier.height(34.dp)
+                                    ) {
+                                        Icon(Icons.Default.Add, contentDescription = "Add", modifier = Modifier.size(16.dp))
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text("Add", fontSize = 12.sp)
+                                    }
+                                }
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 2.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                            }
+                        }
+                    }
+                }
+            }
         }
+    }
+
+    // Configure and Add Skill Dialog
+    if (skillToConfigure != null) {
+        val skill = skillToConfigure!!
+        AlertDialog(
+            onDismissRequest = { skillToConfigure = null },
+            title = {
+                Column {
+                    Text(text = "Add to Portfolio", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(text = skill.name, fontSize = 15.sp, color = MaterialTheme.colorScheme.primary)
+                    Text(text = "Category: ${skill.category}", fontSize = 12.sp, color = MaterialTheme.colorScheme.secondary)
+                }
+            },
+            text = {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text("Select Role:", fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp, bottom = 4.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        RadioButton(
+                            selected = configRoleTeach,
+                            onClick = { configRoleTeach = true }
+                        )
+                        Text("I Can Teach", fontSize = 14.sp)
+                        Spacer(modifier = Modifier.width(16.dp))
+                        RadioButton(
+                            selected = !configRoleTeach,
+                            onClick = { configRoleTeach = false }
+                        )
+                        Text("I Want to Learn", fontSize = 14.sp)
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text("Proficiency Level:", fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 4.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        proficiencyOptions.forEach { opt ->
+                            FilterChip(
+                                selected = configProficiency == opt,
+                                onClick = { configProficiency = opt },
+                                label = { Text(opt.replaceFirstChar { it.uppercase() }, fontSize = 12.sp) }
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val newInfo = UserSkillInfo(
+                            skillId = skill.id,
+                            name = skill.name,
+                            category = skill.category,
+                            proficiency = configProficiency
+                        )
+                        if (configRoleTeach) {
+                            localTeach = localTeach.filter { it.skillId != skill.id } + newInfo
+                        } else {
+                            localLearn = localLearn.filter { it.skillId != skill.id } + newInfo
+                        }
+                        skillToConfigure = null
+                    }
+                ) {
+                    Text("Add to Portfolio")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { skillToConfigure = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 

@@ -12,28 +12,38 @@ def init_production_db():
         db.create_all()
         print("All tables created successfully.")
 
-        # Seed initial skills if table is empty
-        if Skill.query.count() == 0:
-            initial_skills = [
-                {"name": "Python Programming", "category": "Computer Science"},
-                {"name": "Data Structures & Algorithms", "category": "Computer Science"},
-                {"name": "Web Development (React)", "category": "Web & Mobile"},
-                {"name": "Calculus II", "category": "Mathematics"},
-                {"name": "Linear Algebra", "category": "Mathematics"},
-                {"name": "Organic Chemistry", "category": "Chemistry"},
-                {"name": "Spanish Language", "category": "Languages"},
-                {"name": "French Language", "category": "Languages"},
-                {"name": "Graphic Design & UI/UX", "category": "Design"},
-                {"name": "Public Speaking & Debate", "category": "Communication"},
-                {"name": "Academic Writing", "category": "Humanities"},
-                {"name": "Microeconomics", "category": "Business & Economics"},
-            ]
-            for s in initial_skills:
-                db.session.add(Skill(name=s["name"], category=s["category"]))
-            db.session.commit()
-            print(f"Seeded {len(initial_skills)} foundational academic skills.")
+from app.utils.skills_data import CATEGORIZED_SKILLS
+
+def seed_skills():
+    """Idempotently seed all categorized technology skills without duplicates or deleting existing data."""
+    added_count = 0
+    updated_count = 0
+    for s_info in CATEGORIZED_SKILLS:
+        name = s_info["name"].strip()
+        category = s_info["category"].strip()
+        
+        # Check if skill already exists (case-insensitive)
+        existing = Skill.query.filter(db.func.lower(Skill.name) == name.lower()).first()
+        if not existing:
+            db.session.add(Skill(name=name, category=category))
+            added_count += 1
         else:
-            print(f"Database already contains {Skill.query.count()} skills. Skipping seeding.")
+            # Update category if needed
+            if existing.category != category:
+                existing.category = category
+                updated_count += 1
+                
+    if added_count > 0 or updated_count > 0:
+        db.session.commit()
+    print(f"Skills catalog synchronized: {added_count} added, {updated_count} categories updated. Total in catalog: {Skill.query.count()}.")
+
+def init_production_db():
+    print("Connecting to database and creating tables...")
+    app = create_app()
+    with app.app_context():
+        db.create_all()
+        print("All tables created successfully.")
+        seed_skills()
 
 if __name__ == "__main__":
     init_production_db()
