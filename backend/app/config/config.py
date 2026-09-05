@@ -21,7 +21,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # SkillSwap Specific Options
-    ALLOWED_EMAIL_DOMAIN = os.getenv("ALLOWED_EMAIL_DOMAIN", ".edu")
+    ALLOWED_EMAIL_DOMAIN = os.getenv("ALLOWED_EMAIL_DOMAIN", "*")
     APP_ENV = os.getenv("APP_ENV", "development")
     DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "yes")
     

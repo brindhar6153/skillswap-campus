@@ -5,12 +5,17 @@ from app.models.user import User
 from app.models.skill import Skill, UserSkill
 from app.models.availability import UserAvailability
 
+from app.config.config import Config
+
+class TestConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    ALLOWED_EMAIL_DOMAIN = '*'
+
 class Phase4AuthenticationOnboardingTest(unittest.TestCase):
     def setUp(self):
         # Set up test app context
-        self.app = create_app()
-        self.app.config['TESTING'] = True
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+        self.app = create_app(TestConfig)
         self.client = self.app.test_client()
 
         with self.app.app_context():
@@ -31,8 +36,8 @@ class Phase4AuthenticationOnboardingTest(unittest.TestCase):
             db.session.remove()
             db.drop_all()
 
-    # 1. Successful registration
-    def test_01_successful_registration(self):
+    # 1. Successful registration with college/institutional email (.edu)
+    def test_01_successful_registration_college_email(self):
         payload = {
             "name": "Alice Smith",
             "email": "alice@college.edu",
@@ -53,33 +58,72 @@ class Phase4AuthenticationOnboardingTest(unittest.TestCase):
             self.assertNotEqual(user.password_hash, "securepassword123")
             self.assertTrue(user.check_password("securepassword123"))
 
-    # 2. Invalid email format
-    def test_02_invalid_email(self):
-        payload = {
-            "name": "Alice Smith",
-            "email": "alice_invalid_email",
-            "password": "securepassword123",
-            "confirm_password": "securepassword123"
-        }
-        res = self.client.post('/api/auth/register', json=payload)
-        self.assertEqual(res.status_code, 400)
-        data = res.get_json()
-        self.assertEqual(data['error'], "Validation failed")
-        self.assertEqual(data['message'], "Invalid email address format")
+    # 1b. Successful registration with personal emails (Gmail, Outlook, Yahoo)
+    def test_01b_successful_registration_personal_email(self):
+        personal_emails = [
+            ("Bob Jones", "bob.jones@gmail.com"),
+            ("Carol White", "carol_w@outlook.com"),
+            ("David Lee", "dave.lee@yahoo.com")
+        ]
+        for name, email in personal_emails:
+            payload = {
+                "name": name,
+                "email": email,
+                "password": "securepassword123",
+                "confirm_password": "securepassword123"
+            }
+            res = self.client.post('/api/auth/register', json=payload)
+            self.assertEqual(res.status_code, 201, f"Failed for {email}: {res.get_json()}")
+            data = res.get_json()
+            self.assertTrue(data['success'])
 
-    # 3. Disallowed email domain
-    def test_03_disallowed_email_domain(self):
-        payload = {
-            "name": "Alice Smith",
-            "email": "alice@gmail.com",
-            "password": "securepassword123",
-            "confirm_password": "securepassword123"
-        }
-        res = self.client.post('/api/auth/register', json=payload)
-        self.assertEqual(res.status_code, 400)
-        data = res.get_json()
-        self.assertEqual(data['error'], "Validation failed")
-        self.assertIn("Only institutional email addresses", data['message'])
+            # Verify in DB
+            with self.app.app_context():
+                user = User.query.filter_by(email=email).first()
+                self.assertIsNotNone(user)
+                self.assertEqual(user.full_name, name)
+                self.assertTrue(user.check_password("securepassword123"))
+
+    # 2. Invalid email format rejection
+    def test_02_invalid_email_formats(self):
+        invalid_emails = [
+            "alice_invalid_email",
+            "alice@",
+            "@gmail.com",
+            "alice@domain",
+            "alice space@gmail.com"
+        ]
+        for invalid_email in invalid_emails:
+            payload = {
+                "name": "Invalid User",
+                "email": invalid_email,
+                "password": "securepassword123",
+                "confirm_password": "securepassword123"
+            }
+            res = self.client.post('/api/auth/register', json=payload)
+            self.assertEqual(res.status_code, 400, f"Expected 400 for {invalid_email}")
+            data = res.get_json()
+            self.assertEqual(data['error'], "Validation failed")
+            self.assertEqual(data['message'], "Invalid email address format")
+
+    # 3. Configurable domain restriction support
+    def test_03_configurable_domain_restriction(self):
+        # Set a specific domain restriction on the fly
+        self.app.config['ALLOWED_EMAIL_DOMAIN'] = '.edu'
+        try:
+            payload_disallowed = {
+                "name": "Eve Hacker",
+                "email": "eve@disallowed.com",
+                "password": "securepassword123",
+                "confirm_password": "securepassword123"
+            }
+            res = self.client.post('/api/auth/register', json=payload_disallowed)
+            self.assertEqual(res.status_code, 400)
+            data = res.get_json()
+            self.assertEqual(data['error'], "Validation failed")
+            self.assertIn("Only email addresses ending in .edu are allowed", data['message'])
+        finally:
+            self.app.config['ALLOWED_EMAIL_DOMAIN'] = '*'
 
     # 4. Duplicate email registration
     def test_04_duplicate_email(self):

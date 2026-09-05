@@ -134,8 +134,9 @@ class AuthViewModel @JvmOverloads constructor(
                 _registerState.value = OperationState.Error("Full name is required.")
                 return@launch
             }
-            if (email.isBlank() || !email.endsWith(".edu")) {
-                _registerState.value = OperationState.Error("Institutional email ending in .edu is required.")
+            val emailPattern = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$".toRegex()
+            if (email.isBlank() || !email.trim().matches(emailPattern)) {
+                _registerState.value = OperationState.Error("Please enter a valid email address.")
                 return@launch
             }
             if (word.length < 6) {
