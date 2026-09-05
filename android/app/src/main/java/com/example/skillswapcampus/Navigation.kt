@@ -23,8 +23,16 @@ fun MainNavigation() {
     // Initial route starts at Splash
     val backStack = rememberNavBackStack(Splash)
     
-    // Shared ViewModel initialized at the navigation root
-    val authViewModel: AuthViewModel = viewModel()
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val authViewModel: AuthViewModel = viewModel(
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                val app = context.applicationContext as android.app.Application
+                return AuthViewModel(app) as T
+            }
+        }
+    )
     val authState by authViewModel.authState.collectAsStateWithLifecycle()
 
     val handleBack: () -> Unit = {

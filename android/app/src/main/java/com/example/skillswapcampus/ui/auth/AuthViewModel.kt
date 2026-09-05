@@ -27,7 +27,7 @@ sealed interface OperationState {
     data class Error(val message: String) : OperationState
 }
 
-class AuthViewModel(
+class AuthViewModel @JvmOverloads constructor(
     application: Application,
     val repository: SkillSwapRepository = DefaultSkillSwapRepository()
 ) : AndroidViewModel(application) {
