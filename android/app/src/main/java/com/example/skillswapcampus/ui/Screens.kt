@@ -798,7 +798,8 @@ fun SkillsScreen(
     val saveSkillsState by authViewModel.saveSkillsState.collectAsStateWithLifecycle()
 
     var searchQuery by remember { mutableStateOf("") }
-    var selectedCategoryFilter by remember { mutableStateOf("All") }
+    val allCategoriesLabel = "All Categories"
+    var selectedCategoryFilter by remember { mutableStateOf(allCategoriesLabel) }
     var activePortfolioTab by remember { mutableStateOf(0) } // 0 = Teach, 1 = Learn
 
     // Dialog state for adding/editing a skill
@@ -830,17 +831,20 @@ fun SkillsScreen(
 
     // Extract categories
     val categories = remember(globalSkills) {
-        listOf("All") + globalSkills.map { it.category }.distinct().sorted()
+        listOf(allCategoriesLabel) + globalSkills.map { it.category }.distinct().sorted()
     }
 
     // Filter skills by search query and category
     val filteredSkills = remember(globalSkills, searchQuery, selectedCategoryFilter) {
+        val query = searchQuery.trim()
         globalSkills.filter { skill ->
-            val matchesCategory = (selectedCategoryFilter == "All" || skill.category.equals(selectedCategoryFilter, ignoreCase = true))
-            val matchesSearch = searchQuery.isBlank() ||
-                    skill.name.contains(searchQuery, ignoreCase = true) ||
-                    skill.category.contains(searchQuery, ignoreCase = true)
-            matchesCategory && matchesSearch
+            val matchesCategory = (selectedCategoryFilter == allCategoriesLabel || skill.category.equals(selectedCategoryFilter, ignoreCase = true))
+            if (query.isNotEmpty()) {
+                val matchesSearch = skill.name.contains(query, ignoreCase = true) || skill.category.contains(query, ignoreCase = true)
+                matchesSearch && matchesCategory
+            } else {
+                matchesCategory
+            }
         }
     }
 
@@ -1039,13 +1043,19 @@ fun SkillsScreen(
             // Search Bar
             OutlinedTextField(
                 value = searchQuery,
-                onValueChange = { searchQuery = it },
+                onValueChange = { newQuery ->
+                    // If the user starts typing a search query while a category filter is active, automatically reset to All Categories
+                    if (newQuery.isNotBlank() && searchQuery.isBlank() && selectedCategoryFilter != allCategoriesLabel) {
+                        selectedCategoryFilter = allCategoriesLabel
+                    }
+                    searchQuery = newQuery
+                },
                 label = { Text("Search skills by name or category...") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
                 trailingIcon = {
                     if (searchQuery.isNotBlank()) {
                         IconButton(onClick = { searchQuery = "" }) {
-                            Icon(Icons.Default.Close, contentDescription = "Clear")
+                            Icon(Icons.Default.Close, contentDescription = "Clear search")
                         }
                     }
                 },
@@ -1063,10 +1073,24 @@ fun SkillsScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 categories.forEach { cat ->
+                    val isSelected = (selectedCategoryFilter == cat)
                     FilterChip(
-                        selected = selectedCategoryFilter == cat,
+                        selected = isSelected,
                         onClick = { selectedCategoryFilter = cat },
-                        label = { Text(cat) }
+                        label = {
+                            Text(
+                                text = if (cat == allCategoriesLabel) "All" else cat,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                            )
+                        },
+                        leadingIcon = if (isSelected) {
+                            { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
+                        } else null,
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                     )
                 }
             }
