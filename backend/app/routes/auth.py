@@ -50,12 +50,12 @@ def register():
     if password != confirm_password:
         return jsonify({"error": "Validation failed", "message": "Passwords do not match."}), 400
 
-    # Duplication check
-    existing_user = User.query.filter_by(email=email).first()
-    if existing_user:
-        return jsonify({"error": "Conflict error", "message": "Email already registered"}), 409
-
     try:
+        # Duplication check
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            return jsonify({"error": "Conflict error", "message": "Email already registered"}), 409
+
         # Create and save user with default credit balance of 2.00
         new_user = User(
             full_name=name,
@@ -73,6 +73,7 @@ def register():
         }), 201
     except Exception as e:
         db.session.rollback()
+        current_app.logger.error(f"Registration error: {e}")
         return jsonify({"error": "Internal server error", "message": "Failed to complete registration."}), 500
 
 
@@ -89,28 +90,32 @@ def login():
     if not email or not password:
         return jsonify({"error": "Validation failed", "message": "Email and password are required"}), 400
 
-    user = User.query.filter_by(email=email).first()
-    
-    # Generic failure message to prevent email enumeration
-    if not user or not user.check_password(password):
-        return jsonify({"error": "Authentication failed", "message": "Invalid email or password"}), 401
+    try:
+        user = User.query.filter_by(email=email).first()
+        
+        # Generic failure message to prevent email enumeration
+        if not user or not user.check_password(password):
+            return jsonify({"error": "Authentication failed", "message": "Invalid email or password"}), 401
 
-    # Establish secure session cookie
-    session.clear()
-    session['user_id'] = user.id
+        # Establish secure session cookie
+        session.clear()
+        session['user_id'] = user.id
 
-    return jsonify({
-        "success": True,
-        "message": "Logged in successfully",
-        "user": {
-            "id": user.id,
-            "name": user.full_name,
-            "email": user.email,
-            "college": user.college,
-            "course": user.major,
-            "credits": float(user.credit_balance)
-        }
-    }), 200
+        return jsonify({
+            "success": True,
+            "message": "Logged in successfully",
+            "user": {
+                "id": user.id,
+                "name": user.full_name,
+                "email": user.email,
+                "college": user.college,
+                "course": user.major,
+                "credits": float(user.credit_balance)
+            }
+        }), 200
+    except Exception as e:
+        current_app.logger.error(f"Login error: {e}")
+        return jsonify({"error": "Internal server error", "message": "Failed to complete login."}), 500
 
 
 @auth_bp.route('/api/auth/logout', methods=['POST'])

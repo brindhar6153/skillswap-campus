@@ -23,6 +23,13 @@ def create_app(config_class=Config):
     # Import models to register tables with SQLAlchemy metadata
     from app import models
 
+    # Ensure all tables exist in database on startup
+    with app.app_context():
+        try:
+            db.create_all()
+        except Exception as e:
+            app.logger.error(f"Error creating database tables on startup: {e}")
+
     # Register blueprints (routes)
     app.register_blueprint(health_bp, url_prefix='')
     app.register_blueprint(auth_bp, url_prefix='')
