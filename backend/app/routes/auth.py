@@ -33,10 +33,11 @@ def register():
     if not re.match(email_regex, email):
         return jsonify({"error": "Validation failed", "message": "Invalid email address format"}), 400
 
-    # Configured College/Personal Email Domain check (supports '*' wildcard to accept all domains)
+    # Configured College/Personal Email Domain check (supports '*' wildcard or comma-separated domains)
     allowed_domain = current_app.config.get('ALLOWED_EMAIL_DOMAIN', '*').strip()
-    if allowed_domain and allowed_domain != '*':
-        if not email.endswith(allowed_domain.lower()):
+    if allowed_domain and allowed_domain != '*' and '@' not in allowed_domain:
+        domains = [d.strip().lower() for d in allowed_domain.split(',') if d.strip()]
+        if '*' not in domains and not any(email.endswith(d) for d in domains):
             return jsonify({
                 "error": "Validation failed", 
                 "message": f"Only email addresses ending in {allowed_domain} are allowed."
